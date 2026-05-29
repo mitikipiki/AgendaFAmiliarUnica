@@ -26,10 +26,9 @@ body{
     background-position:center;
     background-repeat:no-repeat;
     background-attachment:fixed;
-    background-color:var(--bg);
+    min-height:100vh;
     color:var(--text);
     padding:15px;
-    min-height:100vh;
 }
 
 #contenido-agenda{
@@ -43,11 +42,10 @@ header{
     text-align:center;
     border-radius:10px;
     margin-bottom:20px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.1);
-    position:relative;
     display:flex;
-    align-items:center;
     justify-content:center;
+    align-items:center;
+    position:relative;
 }
 
 h1{
@@ -59,23 +57,17 @@ h1{
 .icono-titulo{
     width:45px;
     height:45px;
-    object-fit:cover;
     border-radius:50%;
     margin-right:12px;
-    border:2px solid var(--primary);
 }
 
 .boton-cerrar{
     position:absolute;
     right:15px;
-    background:rgba(90,100,105,0.8);
-    color:white;
-    border:none;
-    font-size:18px;
-    font-weight:bold;
     width:35px;
     height:35px;
     border-radius:50%;
+    border:none;
     cursor:pointer;
 }
 
@@ -86,51 +78,35 @@ h1{
 
 .loading{
     text-align:center;
-    font-size:18px;
-    background:rgba(255,255,255,0.7);
     padding:15px;
+    background:rgba(255,255,255,0.7);
     border-radius:10px;
 }
 
 .evento-card{
     background:rgba(255,255,255,0.65);
-    padding:15px;
     margin-bottom:15px;
+    padding:15px;
     border-radius:10px;
-    box-shadow:0 4px 15px rgba(0,0,0,0.1);
 }
 
 .evento-header{
     display:flex;
     justify-content:space-between;
-    align-items:center;
     margin-bottom:8px;
 }
 
 .fecha{
     font-weight:bold;
-    color:#1c3d5a;
-    background:rgba(255,255,255,0.5);
-    padding:4px 8px;
-    border-radius:5px;
-    font-size:14px;
-}
-
-.categoria{
-    font-size:13px;
-    text-transform:uppercase;
 }
 
 .titulo{
     font-size:20px;
-    font-weight:bold;
     color:#e74c3c;
-    margin-bottom:5px;
+    font-weight:bold;
 }
 
 .descripcion{
-    font-size:15px;
-    color:#222222;
     font-weight:bold;
 }
 </style>
@@ -142,7 +118,7 @@ h1{
 
 <header>
 <h1>
-<img src="Lucia.bmp" alt="Lucía" class="icono-titulo">
+<img src="Lucia.bmp" class="icono-titulo">
 Agenda Familiar
 </h1>
 
@@ -160,14 +136,13 @@ Agenda Familiar
 const SHEET_ID='1TPhi8Z5oKh3NMu_0n1VetSFI5oA0MSbkhca9EG3wy0k';
 const URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-const CONTRASEÑA_CORRECTA="miperritalucia";
+const CONTRASEÑA_CORRECTA="1234";
 
 let agendaAbierta = true;
 
 function cerrarPagina(){
     document.getElementById('contenido-agenda').style.display='none';
     agendaAbierta = false;
-
     history.pushState({pagina:"cerrado"}, "");
 }
 
@@ -179,9 +154,9 @@ window.addEventListener("popstate", function () {
             <div style="
                 height:100vh;
                 display:flex;
+                flex-direction:column;
                 justify-content:center;
                 align-items:center;
-                flex-direction:column;
                 text-align:center;
                 background:rgba(0,0,0,0.6);
                 color:white;
@@ -195,6 +170,7 @@ window.addEventListener("popstate", function () {
                     font-size:18px;
                     border:none;
                     border-radius:8px;
+                    cursor:pointer;
                 ">
                     Aceptar
                 </button>
@@ -202,14 +178,14 @@ window.addEventListener("popstate", function () {
         `;
 
         document.getElementById("btnCerrar").onclick = function(){
-            document.getElementById('contenido-agenda').style.display = 'none';
+            location.reload();
         };
     }
 });
 
 function comprobarAcceso(){
 
-    const intento=prompt("Introduce la contraseña de la Agenda Familiar:");
+    const intento=prompt("Introduce la contraseña:");
 
     if(intento===CONTRASEÑA_CORRECTA){
 
@@ -245,10 +221,9 @@ async function cargarAgenda(){
             if(!fila.c || !fila.c[0]) return;
 
             const fechaTexto = fila.c[0].f || fila.c[0].v || '';
-
-            const titulo = fila.c[1] ? (fila.c[1].v || '') : '';
-            const descripcion = fila.c[2] ? (fila.c[2].v || '') : '';
-            const categoria = fila.c[3] ? (fila.c[3].v || fila.c[3].f || '') : '';
+            const titulo = fila.c[1]?.v || '';
+            const descripcion = fila.c[2]?.v || '';
+            const categoria = fila.c[3]?.v || '';
 
             if(!fechaTexto) return;
 
@@ -275,11 +250,9 @@ async function cargarAgenda(){
                 card.innerHTML=`
                     <div class="evento-header">
                         <span class="fecha">${fechaTexto}</span>
-                        <span class="categoria"><strong>${categoria}</strong></span>
+                        <span><strong>${categoria}</strong></span>
                     </div>
-
                     <div class="titulo">${titulo}</div>
-
                     <div class="descripcion">${descripcion}</div>
                 `;
 
@@ -289,17 +262,11 @@ async function cargarAgenda(){
         });
 
         if(contenedor.innerHTML===''){
-            contenedor.innerHTML=
-            '<div class="loading">No hay eventos próximos.</div>';
+            contenedor.innerHTML='<div class="loading">No hay eventos.</div>';
         }
 
     }catch(error){
-
-        console.error(error);
-
-        document.getElementById('agenda').innerHTML=
-        '<div class="loading">Error al cargar los eventos.</div>';
-
+        document.getElementById('agenda').innerHTML='<div class="loading">Error cargando datos.</div>';
     }
 }
 
