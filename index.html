@@ -77,13 +77,6 @@ h1{
     height:35px;
     border-radius:50%;
     cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-
-.boton-cerrar:hover{
-    background:rgba(70,80,85,0.9);
 }
 
 #agenda{
@@ -175,7 +168,7 @@ function cerrarPagina(){
     document.getElementById('contenido-agenda').style.display='none';
     agendaAbierta = false;
 
-    history.pushState({pagina:"agenda"}, "");
+    history.pushState({pagina:"cerrado"}, "");
 }
 
 window.addEventListener("popstate", function () {
@@ -202,7 +195,6 @@ window.addEventListener("popstate", function () {
                     font-size:18px;
                     border:none;
                     border-radius:8px;
-                    cursor:pointer;
                 ">
                     Aceptar
                 </button>
@@ -210,14 +202,10 @@ window.addEventListener("popstate", function () {
         `;
 
         document.getElementById("btnCerrar").onclick = function(){
-            document.body.innerHTML = "";
+            document.getElementById('contenido-agenda').style.display = 'none';
         };
     }
 });
-
-function cerrarSesion(){
-    location.reload();
-}
 
 function comprobarAcceso(){
 
