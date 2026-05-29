@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda Familiar</title>
+
+<style>
+:root {
+    --primary: #1c3d5a;
+    --accent: #e74c3c;
+    --bg: #dbf0f9;
+    --text: #000000;
+}
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background-image:url('mi perrita entrada.png');
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    background-attachment:fixed;
+    background-color:var(--bg);
+    color:var(--text);
+    padding:15px;
+    min-height:100vh;
+}
+
+#contenido-agenda{
+    display:none;
+}
+
+header{
+    background-color:rgba(140,150,155,0.45);
+    color:var(--primary);
+    padding:15px;
+    text-align:center;
+    border-radius:10px;
+    margin-bottom:20px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+h1{
+    font-size:24px;
+    display:flex;
+    align-items:center;
+}
+
+.icono-titulo{
+    width:45px;
+    height:45px;
+    object-fit:cover;
+    border-radius:50%;
+    margin-right:12px;
+    border:2px solid var(--primary);
+}
+
+.boton-cerrar{
+    position:absolute;
+    right:15px;
+    background:rgba(90,100,105,0.8);
+    color:white;
+    border:none;
+    font-size:18px;
+    font-weight:bold;
+    width:35px;
+    height:35px;
+    border-radius:50%;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.boton-cerrar:hover{
+    background:rgba(70,80,85,0.9);
+}
+
+#agenda{
+    max-width:600px;
+    margin:0 auto;
+}
+
+.loading{
+    text-align:center;
+    font-size:18px;
+    background:rgba(255,255,255,0.7);
+    padding:15px;
+    border-radius:10px;
+}
+
+.evento-card{
+    background:rgba(255,255,255,0.65);
+    padding:15px;
+    margin-bottom:15px;
+    border-radius:10px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
+}
+
+.evento-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+}
+
+.fecha{
+    font-weight:bold;
+    color:#1c3d5a;
+    background:rgba(255,255,255,0.5);
+    padding:4px 8px;
+    border-radius:5px;
+    font-size:14px;
+}
+
+.categoria{
+    font-size:13px;
+    text-transform:uppercase;
+}
+
+.titulo{
+    font-size:20px;
+    font-weight:bold;
+    color:#e74c3c;
+    margin-bottom:5px;
+}
+
+.descripcion{
+    font-size:15px;
+    color:#222222;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div id="contenido-agenda">
+
+<header>
+<h1>
+<img src="Lucia.bmp" alt="Lucía" class="icono-titulo">
+Agenda Familiar
+</h1>
+
+<button class="boton-cerrar" onclick="cerrarPagina()">X</button>
+</header>
+
+<main id="agenda">
+<div class="loading">Cargando eventos...</div>
+</main>
+
+</div>
+
+<script>
+
+const SHEET_ID='1TPhi8Z5oKh3NMu_0n1VetSFI5oA0MSbkhca9EG3wy0k';
+const URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
+const CONTRASEÑA_CORRECTA="miperritalucia";
+
+function cerrarPagina(){
+    location.reload();
+}
+
+  
+
+
+function comprobarAcceso(){
+
+    const intento=prompt("Introduce la contraseña de la Agenda Familiar:");
+
+    if(intento===CONTRASEÑA_CORRECTA){
+
+        document.getElementById('contenido-agenda').style.display='block';
+        cargarAgenda();
+
+    }else{
+
+        alert("Contraseña incorrecta.");
+        comprobarAcceso();
+
+    }
+}
+
+async function cargarAgenda(){
+
+    try{
+
+        const response=await fetch(URL);
+        const text=await response.text();
+        const data=JSON.parse(text.substr(47).slice(0,-2));
+
+        const filas=data.table.rows;
+        const contenedor=document.getElementById('agenda');
+
+        contenedor.innerHTML='';
+
+        const hoy=new Date();
+        hoy.setHours(0,0,0,0);
+
+        // 🔥 IMPORTANTE: saltamos encabezados
+        filas.forEach((fila)=>{
+console.log(fila.c);
+            if(!fila.c || !fila.c[0]) return;
+
+            const fechaTexto = fila.c[0].f || fila.c[0].v || '';
+
+            const titulo = fila.c[1] ? (fila.c[1].v || '') : '';
+            const descripcion = fila.c[2] ? (fila.c[2].v || '') : '';
+            const categoria = fila.c[3] ? (fila.c[3].v || fila.c[3].f || '') : '';
+
+            if(!fechaTexto) return;
+
+            const partes=fechaTexto.split('/');
+
+            if(partes.length!==3) return;
+
+            const fechaEvento=new Date(
+                parseInt(partes[2]),
+                parseInt(partes[1])-1,
+                parseInt(partes[0])
+            );
+
+            fechaEvento.setHours(0,0,0,0);
+
+            const fechaInicio=new Date(fechaEvento);
+            fechaInicio.setDate(fechaEvento.getDate()-3);
+
+            if(hoy>=fechaInicio && hoy<=fechaEvento){
+
+                const card=document.createElement('div');
+                card.className='evento-card';
+
+                card.innerHTML=`
+                    <div class="evento-header">
+                        <span class="fecha">${fechaTexto}</span>
+                        <span class="categoria"><strong>${categoria}</strong></span>
+                    </div>
+
+                    <div class="titulo">${titulo}</div>
+
+                    <div class="descripcion">${descripcion}</div>
+                `;
+
+                contenedor.appendChild(card);
+            }
+
+        });
+
+        if(contenedor.innerHTML===''){
+            contenedor.innerHTML=
+            '<div class="loading">No hay eventos próximos.</div>';
+        }
+
+    }catch(error){
+
+        console.error(error);
+
+        document.getElementById('agenda').innerHTML=
+        '<div class="loading">Error al cargar los eventos.</div>';
+
+    }
+}
+
+comprobarAcceso();
+
+</script>
+
+</body>
+</html>
