@@ -167,15 +167,57 @@ Agenda Familiar
 const SHEET_ID='1TPhi8Z5oKh3NMu_0n1VetSFI5oA0MSbkhca9EG3wy0k';
 const URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-const CONTRASEÑA_CORRECTA="miperritalucia";
+const CONTRASEÑA_CORRECTA="1234";
+
+let agendaAbierta = true;
 
 function cerrarPagina(){
     document.getElementById('contenido-agenda').style.display='none';
+    agendaAbierta = false;
 
+    history.pushState({pagina:"agenda"}, "");
 }
 
-  
+window.addEventListener("popstate", function () {
 
+    if (!agendaAbierta) {
+
+        document.body.innerHTML = `
+            <div style="
+                height:100vh;
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                flex-direction:column;
+                text-align:center;
+                background:rgba(0,0,0,0.6);
+                color:white;
+                font-size:22px;
+                padding:20px;
+            ">
+                <p><strong>Agenda cerrada</strong></p>
+                <button id="btnCerrar" style="
+                    margin-top:20px;
+                    padding:10px 20px;
+                    font-size:18px;
+                    border:none;
+                    border-radius:8px;
+                    cursor:pointer;
+                ">
+                    Aceptar
+                </button>
+            </div>
+        `;
+
+        document.getElementById("btnCerrar").onclick = function(){
+            document.body.innerHTML = "";
+        };
+    }
+});
+
+function cerrarSesion(){
+    location.reload();
+}
 
 function comprobarAcceso(){
 
@@ -210,9 +252,8 @@ async function cargarAgenda(){
         const hoy=new Date();
         hoy.setHours(0,0,0,0);
 
-        // 🔥 IMPORTANTE: saltamos encabezados
-        filas.forEach((fila)=>{
-console.log(fila.c);
+        filas.slice(1).forEach((fila)=>{
+
             if(!fila.c || !fila.c[0]) return;
 
             const fechaTexto = fila.c[0].f || fila.c[0].v || '';
@@ -280,3 +321,5 @@ comprobarAcceso();
 
 </body>
 </html>
+  
+    
