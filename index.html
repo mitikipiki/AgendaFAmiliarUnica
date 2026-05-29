@@ -6,13 +6,29 @@
 <title>Agenda Familiar</title>
 
 <style>
-body{
+:root {
+    --primary: #1c3d5a;
+    --accent: #e74c3c;
+    --bg: #dbf0f9;
+    --text: #000000;
+}
+
+*{
+    box-sizing:border-box;
     margin:0;
-    font-family:Arial;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body{
     background-image:url('mi perrita entrada.png');
     background-size:cover;
     background-position:center;
+    background-repeat:no-repeat;
+    background-attachment:fixed;
     min-height:100vh;
+    color:var(--text);
+    padding:15px;
 }
 
 #contenido-agenda{
@@ -20,18 +36,34 @@ body{
 }
 
 header{
-    background:rgba(0,0,0,0.4);
-    color:white;
-    padding:10px;
+    background-color:rgba(140,150,155,0.45);
+    color:var(--primary);
+    padding:15px;
+    text-align:center;
+    border-radius:10px;
+    margin-bottom:20px;
     display:flex;
     justify-content:center;
     align-items:center;
     position:relative;
 }
 
+h1{
+    font-size:24px;
+    display:flex;
+    align-items:center;
+}
+
+.icono-titulo{
+    width:45px;
+    height:45px;
+    border-radius:50%;
+    margin-right:12px;
+}
+
 .boton-cerrar{
     position:absolute;
-    right:10px;
+    right:15px;
     width:35px;
     height:35px;
     border-radius:50%;
@@ -41,15 +73,41 @@ header{
 
 #agenda{
     max-width:600px;
-    margin:auto;
-    padding:10px;
+    margin:0 auto;
+}
+
+.loading{
+    text-align:center;
+    padding:15px;
+    background:rgba(255,255,255,0.7);
+    border-radius:10px;
 }
 
 .evento-card{
-    background:rgba(255,255,255,0.7);
-    margin:10px 0;
-    padding:10px;
+    background:rgba(255,255,255,0.65);
+    margin-bottom:15px;
+    padding:15px;
     border-radius:10px;
+}
+
+.evento-header{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:8px;
+}
+
+.fecha{
+    font-weight:bold;
+}
+
+.titulo{
+    font-size:20px;
+    color:#e74c3c;
+    font-weight:bold;
+}
+
+.descripcion{
+    font-weight:bold;
 }
 </style>
 </head>
@@ -59,11 +117,17 @@ header{
 <div id="contenido-agenda">
 
 <header>
-<h1>Agenda Familiar</h1>
+<h1>
+<img src="Lucia.bmp" class="icono-titulo">
+Agenda Familiar
+</h1>
+
 <button class="boton-cerrar" onclick="cerrarPagina()">X</button>
 </header>
 
-<div id="agenda">Cargando...</div>
+<main id="agenda">
+<div class="loading">Cargando eventos...</div>
+</main>
 
 </div>
 
@@ -72,20 +136,19 @@ header{
 const SHEET_ID='1TPhi8Z5oKh3NMu_0n1VetSFI5oA0MSbkhca9EG3wy0k';
 const URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-const CONTRASEÑA_CORRECTA="1234";
+const CONTRASEÑA_CORRECTA="miperritalucia";
 
 let agendaAbierta = true;
-let bloqueado = false;
 
 function cerrarPagina(){
     document.getElementById('contenido-agenda').style.display='none';
     agendaAbierta = false;
-    history.pushState({}, "");
+    history.pushState({pagina:"cerrado"}, "");
 }
 
 window.addEventListener("popstate", function () {
 
-    if (!agendaAbierta && !bloqueado) {
+    if (!agendaAbierta) {
 
         document.body.innerHTML = `
             <div style="
@@ -95,40 +158,27 @@ window.addEventListener("popstate", function () {
                 justify-content:center;
                 align-items:center;
                 text-align:center;
-                background:rgba(0,0,0,0.7);
+                background:rgba(0,0,0,0.6);
                 color:white;
                 font-size:22px;
                 padding:20px;
             ">
                 <p><strong>Agenda cerrada</strong></p>
-                <button id="btnOk" style="
+                <button id="btnCerrar" style="
                     margin-top:20px;
                     padding:10px 20px;
                     font-size:18px;
                     border:none;
                     border-radius:8px;
+                    cursor:pointer;
                 ">
                     Aceptar
                 </button>
             </div>
         `;
 
-        document.getElementById("btnOk").onclick = function(){
-            bloqueado = true;
-
-            document.body.innerHTML = `
-                <div style="
-                    height:100vh;
-                    display:flex;
-                    justify-content:center;
-                    align-items:center;
-                    color:white;
-                    background:rgba(0,0,0,0.6);
-                    font-size:22px;
-                ">
-                    Agenda cerrada
-                </div>
-            `;
+        document.getElementById("btnCerrar").onclick = function(){
+            location.reload();
         };
     }
 });
@@ -138,46 +188,86 @@ function comprobarAcceso(){
     const intento=prompt("Introduce la contraseña:");
 
     if(intento===CONTRASEÑA_CORRECTA){
+
         document.getElementById('contenido-agenda').style.display='block';
         cargarAgenda();
+
     }else{
-        alert("Incorrecta");
+
+        alert("Contraseña incorrecta.");
         comprobarAcceso();
+
     }
 }
 
 async function cargarAgenda(){
 
-    const response=await fetch(URL);
-    const text=await response.text();
-    const data=JSON.parse(text.substr(47).slice(0,-2));
+    try{
 
-    const filas=data.table.rows;
-    const contenedor=document.getElementById('agenda');
+        const response=await fetch(URL);
+        const text=await response.text();
+        const data=JSON.parse(text.substr(47).slice(0,-2));
 
-    contenedor.innerHTML='';
+        const filas=data.table.rows;
+        const contenedor=document.getElementById('agenda');
 
-    filas.slice(1).forEach((fila)=>{
+        contenedor.innerHTML='';
 
-        if(!fila.c || !fila.c[0]) return;
+        const hoy=new Date();
+        hoy.setHours(0,0,0,0);
 
-        const fecha=fila.c[0].v || '';
-        const titulo=fila.c[1]?.v || '';
-        const desc=fila.c[2]?.v || '';
-        const cat=fila.c[3]?.v || '';
+        filas.slice(1).forEach((fila)=>{
 
-        const card=document.createElement('div');
-        card.className='evento-card';
+            if(!fila.c || !fila.c[0]) return;
 
-        card.innerHTML=`
-            <strong>${fecha}</strong><br>
-            ${titulo}<br>
-            ${desc}<br>
-            <em>${cat}</em>
-        `;
+            const fechaTexto = fila.c[0].f || fila.c[0].v || '';
+            const titulo = fila.c[1]?.v || '';
+            const descripcion = fila.c[2]?.v || '';
+            const categoria = fila.c[3]?.v || '';
 
-        contenedor.appendChild(card);
-    });
+            if(!fechaTexto) return;
+
+            const partes=fechaTexto.split('/');
+
+            if(partes.length!==3) return;
+
+            const fechaEvento=new Date(
+                parseInt(partes[2]),
+                parseInt(partes[1])-1,
+                parseInt(partes[0])
+            );
+
+            fechaEvento.setHours(0,0,0,0);
+
+            const fechaInicio=new Date(fechaEvento);
+            fechaInicio.setDate(fechaEvento.getDate()-3);
+
+            if(hoy>=fechaInicio && hoy<=fechaEvento){
+
+                const card=document.createElement('div');
+                card.className='evento-card';
+
+                card.innerHTML=`
+                    <div class="evento-header">
+                        <span class="fecha">${fechaTexto}</span>
+                        <span><strong>${categoria}</strong></span>
+                    </div>
+                    <div class="titulo">${titulo}</div>
+                    <div class="descripcion">${descripcion}</div>
+                `;
+
+                contenedor.appendChild(card);
+            }
+
+        });
+
+        if(contenedor.innerHTML===''){
+            contenedor.innerHTML='<div class="loading">No hay eventos.</div>';
+        }
+
+    }catch(error){
+        document.getElementById('agenda').innerHTML='<div class="loading">Error cargando datos.</div>';
+    }
 }
 
 comprobarAcceso();
