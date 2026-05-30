@@ -31,14 +31,12 @@ body{
     padding:15px;
 }
 
-/* CAPA AGENDA */
 #contenido-agenda{
     display:none;
     position: relative;
     z-index: 2;
 }
 
-/* HEADER */
 header{
     background-color:rgba(140,150,155,0.45);
     color:var(--primary);
@@ -65,7 +63,6 @@ h1{
     margin-right:12px;
 }
 
-/* BOTÓN X */
 .boton-cerrar{
     position:absolute;
     right:15px;
@@ -76,7 +73,6 @@ h1{
     cursor:pointer;
 }
 
-/* BOTÓN CERRAR APP */
 #btn-salir{
     display:none;
     position:fixed;
@@ -92,7 +88,6 @@ h1{
     z-index:9999;
 }
 
-/* FECHA */
 #fecha-hoy{
     text-align:center;
     color:red;
@@ -138,18 +133,12 @@ h1{
     font-size: 12px;
 }
 
-.cal-day{
-    padding: 4px;
-    border-radius: 4px;
-}
-
 .today{
     background:#e74c3c;
     color:white;
     font-weight:bold;
 }
 
-/* AGENDA */
 #agenda{
     max-width:600px;
     margin:0 auto;
@@ -217,7 +206,6 @@ h1{
 
 </div>
 
-<!-- BOTÓN SALIR TOTAL -->
 <button id="btn-salir" onclick="salirApp()">🚪 Cerrar agenda</button>
 
 <script>
@@ -227,44 +215,7 @@ const URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:js
 
 const CONTRASEÑA_CORRECTA="miperritalucia";
 
-let mesActual = new Date().getMonth();
-let añoActual = new Date().getFullYear();
-
-/* LOGIN */
-function comprobarAcceso(){
-
-    const intento=prompt("Introduce la contraseña:");
-
-    if(intento===CONTRASEÑA_CORRECTA){
-
-        document.getElementById('contenido-agenda').style.display='block';
-        document.getElementById('btn-salir').style.display='none';
-
-        const hoyTexto = new Date().toLocaleDateString('es-ES', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long'
-        });
-
-        document.getElementById('fecha-hoy').textContent =
-            'Hoy es: ' + hoyTexto;
-
-        generarCalendario();
-        cargarAgenda();
-
-    }else{
-        alert("Contraseña incorrecta.");
-        comprobarAcceso();
-    }
-}
-
-/* X → SOLO OCULTA */
-function cerrarPagina(){
-    document.getElementById('contenido-agenda').style.display='none';
-    document.getElementById('btn-salir').style.display='block';
-}
-
-/* SALIDA TOTAL */
+/* CERRAR APP */
 function salirApp(){
 
     document.body.innerHTML = `
@@ -276,144 +227,16 @@ function salirApp(){
             flex-direction:column;
             background-image:url('mi perrita entrada.png');
             background-size:cover;
-            color:white;
             text-align:center;
+            padding:20px;
         ">
-            <h2>Agenda cerrada</h2>
-            <p>Puedes cerrar esta pestaña</p>
+            <h2 style="color:black;">Agenda cerrada</h2>
+            <p style="color:black; font-size:18px; margin-top:10px;">
+                Pulsa la flecha de atrás del móvil para volver a la pantalla inicial
+            </p>
         </div>
     `;
 }
-
-/* CALENDARIO */
-function generarCalendario(){
-
-    const cont = document.getElementById("calendario-mes");
-
-    const primerDia = new Date(añoActual, mesActual, 1);
-    const ultimoDia = new Date(añoActual, mesActual + 1, 0);
-    const hoy = new Date();
-
-    const diasSemana = ["L","M","X","J","V","S","D"];
-
-    let html = `
-        <div class="cal-header">
-            <button onclick="cambiarMes(-1)">⬅</button>
-            ${primerDia.toLocaleDateString('es-ES',{month:'long',year:'numeric'})}
-            <button onclick="cambiarMes(1)">➡</button>
-        </div>
-        <div class="cal-grid">
-    `;
-
-    diasSemana.forEach(d=>{
-        html+=`<div><strong>${d}</strong></div>`;
-    });
-
-    for(let i=0;i<primerDia.getDay();i++){
-        html+=`<div></div>`;
-    }
-
-    for(let d=1;d<=ultimoDia.getDate();d++){
-
-        const esHoy =
-            d===hoy.getDate() &&
-            mesActual===hoy.getMonth() &&
-            añoActual===hoy.getFullYear();
-
-        html+=`<div class="${esHoy?'today':''}">${d}</div>`;
-    }
-
-    html+=`</div>`;
-    cont.innerHTML=html;
-}
-
-/* CAMBIO MES */
-function cambiarMes(dir){
-
-    mesActual+=dir;
-
-    if(mesActual>11){
-        mesActual=0;
-        añoActual++;
-    }
-
-    if(mesActual<0){
-        mesActual=11;
-        añoActual--;
-    }
-
-    generarCalendario();
-}
-
-/* AGENDA */
-async function cargarAgenda(){
-
-    try{
-
-        const response=await fetch(URL);
-        const text=await response.text();
-        const data=JSON.parse(text.substr(47).slice(0,-2));
-
-        const filas=data.table.rows;
-        const contenedor=document.getElementById('agenda');
-
-        contenedor.innerHTML='';
-
-        const hoy=new Date();
-        hoy.setHours(0,0,0,0);
-
-        filas.slice(1).forEach((fila)=>{
-
-            if(!fila.c || !fila.c[0]) return;
-
-            const fechaTexto = fila.c[0].f || fila.c[0].v || '';
-            const titulo = fila.c[1]?.v || '';
-            const descripcion = fila.c[2]?.v || '';
-            const categoria = fila.c[3]?.v || '';
-
-            const partes=fechaTexto.split('/');
-            if(partes.length!==3) return;
-
-            const fechaEvento=new Date(
-                parseInt(partes[2]),
-                parseInt(partes[1])-1,
-                parseInt(partes[0])
-            );
-
-            fechaEvento.setHours(0,0,0,0);
-
-            const fechaInicio=new Date(fechaEvento);
-            fechaInicio.setDate(fechaEvento.getDate()-3);
-
-            if(hoy>=fechaInicio && hoy<=fechaEvento){
-
-                const card=document.createElement('div');
-                card.className='evento-card';
-
-                card.innerHTML=`
-                    <div class="evento-header">
-                        <span class="fecha">${fechaTexto}</span>
-                        <span><strong>${categoria}</strong></span>
-                    </div>
-                    <div class="titulo">${titulo}</div>
-                    <div class="descripcion">${descripcion}</div>
-                `;
-
-                contenedor.appendChild(card);
-            }
-
-        });
-
-        if(contenedor.innerHTML===''){
-            contenedor.innerHTML='<div class="loading">No hay eventos.</div>';
-        }
-
-    }catch(error){
-        document.getElementById('agenda').innerHTML='<div class="loading">Error cargando datos.</div>';
-    }
-}
-
-comprobarAcceso();
 
 </script>
 
