@@ -31,10 +31,14 @@ body{
     padding:15px;
 }
 
+/* CAPA AGENDA */
 #contenido-agenda{
     display:none;
+    position: relative;
+    z-index: 2;
 }
 
+/* HEADER */
 header{
     background-color:rgba(140,150,155,0.45);
     color:var(--primary);
@@ -61,6 +65,7 @@ h1{
     margin-right:12px;
 }
 
+/* BOTÓN X */
 .boton-cerrar{
     position:absolute;
     right:15px;
@@ -69,6 +74,22 @@ h1{
     border-radius:50%;
     border:none;
     cursor:pointer;
+}
+
+/* BOTÓN CERRAR APP */
+#btn-salir{
+    display:none;
+    position:fixed;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    background:#000;
+    color:white;
+    font-size:16px;
+    z-index:9999;
 }
 
 /* FECHA */
@@ -95,7 +116,19 @@ h1{
     font-weight: bold;
     margin-bottom: 8px;
     color: #1c3d5a;
-    text-transform: capitalize;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+}
+
+.cal-header button{
+    background:#e74c3c;
+    color:white;
+    border:none;
+    border-radius:6px;
+    padding:4px 8px;
+    cursor:pointer;
 }
 
 .cal-grid{
@@ -111,11 +144,12 @@ h1{
 }
 
 .today{
-    background: #e74c3c;
-    color: white;
-    font-weight: bold;
+    background:#e74c3c;
+    color:white;
+    font-weight:bold;
 }
 
+/* AGENDA */
 #agenda{
     max-width:600px;
     margin:0 auto;
@@ -183,6 +217,9 @@ h1{
 
 </div>
 
+<!-- BOTÓN SALIR TOTAL -->
+<button id="btn-salir" onclick="salirApp()">🚪 Cerrar agenda</button>
+
 <script>
 
 const SHEET_ID='1TPhi8Z5oKh3NMu_0n1VetSFI5oA0MSbkhca9EG3wy0k';
@@ -190,51 +227,10 @@ const URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:js
 
 const CONTRASEÑA_CORRECTA="miperritalucia";
 
-let agendaAbierta = true;
+let mesActual = new Date().getMonth();
+let añoActual = new Date().getFullYear();
 
-function cerrarPagina(){
-    document.getElementById('contenido-agenda').style.display='none';
-    agendaAbierta = false;
-    history.pushState({pagina:"cerrado"}, "");
-}
-
-window.addEventListener("popstate", function () {
-
-    if (!agendaAbierta) {
-
-        document.body.innerHTML = `
-            <div style="
-                height:100vh;
-                display:flex;
-                flex-direction:column;
-                justify-content:center;
-                align-items:center;
-                text-align:center;
-                background:rgba(0,0,0,0.6);
-                color:white;
-                font-size:22px;
-                padding:20px;
-            ">
-                <p><strong>Agenda cerrada</strong></p>
-                <button id="btnCerrar" style="
-                    margin-top:20px;
-                    padding:10px 20px;
-                    font-size:18px;
-                    border:none;
-                    border-radius:8px;
-                    cursor:pointer;
-                ">
-                    Aceptar
-                </button>
-            </div>
-        `;
-
-        document.getElementById("btnCerrar").onclick = function(){
-            location.reload();
-        };
-    }
-});
-
+/* LOGIN */
 function comprobarAcceso(){
 
     const intento=prompt("Introduce la contraseña:");
@@ -242,7 +238,7 @@ function comprobarAcceso(){
     if(intento===CONTRASEÑA_CORRECTA){
 
         document.getElementById('contenido-agenda').style.display='block';
-        cargarAgenda();
+        document.getElementById('btn-salir').style.display='none';
 
         const hoyTexto = new Date().toLocaleDateString('es-ES', {
             weekday: 'long',
@@ -254,6 +250,7 @@ function comprobarAcceso(){
             'Hoy es: ' + hoyTexto;
 
         generarCalendario();
+        cargarAgenda();
 
     }else{
         alert("Contraseña incorrecta.");
@@ -261,49 +258,94 @@ function comprobarAcceso(){
     }
 }
 
+/* X → SOLO OCULTA */
+function cerrarPagina(){
+    document.getElementById('contenido-agenda').style.display='none';
+    document.getElementById('btn-salir').style.display='block';
+}
+
+/* SALIDA TOTAL */
+function salirApp(){
+
+    document.body.innerHTML = `
+        <div style="
+            height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            flex-direction:column;
+            background-image:url('mi perrita entrada.png');
+            background-size:cover;
+            color:white;
+            text-align:center;
+        ">
+            <h2>Agenda cerrada</h2>
+            <p>Puedes cerrar esta pestaña</p>
+        </div>
+    `;
+}
+
+/* CALENDARIO */
 function generarCalendario(){
 
     const cont = document.getElementById("calendario-mes");
 
+    const primerDia = new Date(añoActual, mesActual, 1);
+    const ultimoDia = new Date(añoActual, mesActual + 1, 0);
     const hoy = new Date();
-    const año = hoy.getFullYear();
-    const mes = hoy.getMonth();
 
-    const primerDia = new Date(año, mes, 1);
-    const ultimoDia = new Date(año, mes + 1, 0);
+    const diasSemana = ["L","M","X","J","V","S","D"];
 
-    const diasSemana = ["L", "M", "X", "J", "V", "S", "D"];
+    let html = `
+        <div class="cal-header">
+            <button onclick="cambiarMes(-1)">⬅</button>
+            ${primerDia.toLocaleDateString('es-ES',{month:'long',year:'numeric'})}
+            <button onclick="cambiarMes(1)">➡</button>
+        </div>
+        <div class="cal-grid">
+    `;
 
-    let html = `<div class="cal-header">
-        ${hoy.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
-    </div>`;
-
-    html += `<div class="cal-grid">`;
-
-    diasSemana.forEach(d => {
-        html += `<div class="cal-day"><strong>${d}</strong></div>`;
+    diasSemana.forEach(d=>{
+        html+=`<div><strong>${d}</strong></div>`;
     });
 
-    for (let i = 0; i < primerDia.getDay(); i++) {
-        html += `<div></div>`;
+    for(let i=0;i<primerDia.getDay();i++){
+        html+=`<div></div>`;
     }
 
-    for (let d = 1; d <= ultimoDia.getDate(); d++) {
+    for(let d=1;d<=ultimoDia.getDate();d++){
 
-        const esHoy = d === hoy.getDate();
+        const esHoy =
+            d===hoy.getDate() &&
+            mesActual===hoy.getMonth() &&
+            añoActual===hoy.getFullYear();
 
-        html += `
-            <div class="cal-day ${esHoy ? 'today' : ''}">
-                ${d}
-            </div>
-        `;
+        html+=`<div class="${esHoy?'today':''}">${d}</div>`;
     }
 
-    html += `</div>`;
-
-    cont.innerHTML = html;
+    html+=`</div>`;
+    cont.innerHTML=html;
 }
 
+/* CAMBIO MES */
+function cambiarMes(dir){
+
+    mesActual+=dir;
+
+    if(mesActual>11){
+        mesActual=0;
+        añoActual++;
+    }
+
+    if(mesActual<0){
+        mesActual=11;
+        añoActual--;
+    }
+
+    generarCalendario();
+}
+
+/* AGENDA */
 async function cargarAgenda(){
 
     try{
