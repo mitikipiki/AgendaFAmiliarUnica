@@ -71,6 +71,51 @@ h1{
     cursor:pointer;
 }
 
+/* FECHA */
+#fecha-hoy{
+    text-align:center;
+    color:red;
+    font-weight:bold;
+    margin-top:5px;
+    font-size:16px;
+}
+
+/* CALENDARIO */
+#calendario-mes{
+    margin: 10px auto 20px;
+    max-width: 320px;
+    background: rgba(255,255,255,0.75);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.cal-header{
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #1c3d5a;
+    text-transform: capitalize;
+}
+
+.cal-grid{
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    font-size: 12px;
+}
+
+.cal-day{
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.today{
+    background: #e74c3c;
+    color: white;
+    font-weight: bold;
+}
+
 #agenda{
     max-width:600px;
     margin:0 auto;
@@ -117,12 +162,19 @@ h1{
 <div id="contenido-agenda">
 
 <header>
-<h1>
-<img src="Lucia.bmp" class="icono-titulo">
-Agenda Familiar
-</h1>
+
+<div>
+    <h1>
+        <img src="Lucia.bmp" class="icono-titulo">
+        Agenda Familiar
+    </h1>
+
+    <div id="fecha-hoy"></div>
+    <div id="calendario-mes"></div>
+</div>
 
 <button class="boton-cerrar" onclick="cerrarPagina()">X</button>
+
 </header>
 
 <main id="agenda">
@@ -192,12 +244,64 @@ function comprobarAcceso(){
         document.getElementById('contenido-agenda').style.display='block';
         cargarAgenda();
 
-    }else{
+        const hoyTexto = new Date().toLocaleDateString('es-ES', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long'
+        });
 
+        document.getElementById('fecha-hoy').textContent =
+            'Hoy es: ' + hoyTexto;
+
+        generarCalendario();
+
+    }else{
         alert("Contraseña incorrecta.");
         comprobarAcceso();
-
     }
+}
+
+function generarCalendario(){
+
+    const cont = document.getElementById("calendario-mes");
+
+    const hoy = new Date();
+    const año = hoy.getFullYear();
+    const mes = hoy.getMonth();
+
+    const primerDia = new Date(año, mes, 1);
+    const ultimoDia = new Date(año, mes + 1, 0);
+
+    const diasSemana = ["L", "M", "X", "J", "V", "S", "D"];
+
+    let html = `<div class="cal-header">
+        ${hoy.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+    </div>`;
+
+    html += `<div class="cal-grid">`;
+
+    diasSemana.forEach(d => {
+        html += `<div class="cal-day"><strong>${d}</strong></div>`;
+    });
+
+    for (let i = 0; i < primerDia.getDay(); i++) {
+        html += `<div></div>`;
+    }
+
+    for (let d = 1; d <= ultimoDia.getDate(); d++) {
+
+        const esHoy = d === hoy.getDate();
+
+        html += `
+            <div class="cal-day ${esHoy ? 'today' : ''}">
+                ${d}
+            </div>
+        `;
+    }
+
+    html += `</div>`;
+
+    cont.innerHTML = html;
 }
 
 async function cargarAgenda(){
@@ -225,10 +329,7 @@ async function cargarAgenda(){
             const descripcion = fila.c[2]?.v || '';
             const categoria = fila.c[3]?.v || '';
 
-            if(!fechaTexto) return;
-
             const partes=fechaTexto.split('/');
-
             if(partes.length!==3) return;
 
             const fechaEvento=new Date(
