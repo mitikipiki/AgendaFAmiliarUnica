@@ -292,21 +292,22 @@ function cerrarPagina(){
 /* SALIR TOTAL */
 function salirApp(){
 
-    // MODIFICACIÓN DE COLORES Y ESTILOS SOLICITADOS AQUÍ
+    // CORRECCIÓN DE POSICIÓN: Cambiado justify-content a flex-start y añadido padding-top
     document.body.innerHTML = `
         <div style="
             height:100vh;
             display:flex;
-            justify-content:center;
+            justify-content: flex-start;
             align-items:center;
             flex-direction:column;
             background-image:url('mi perrita entrada.png');
             background-size:cover;
             text-align:center;
-            padding: 20px;
+            padding: 15px;
+            padding-top: 60px;
         ">
-            <h2 style="color: white; font-size: 28px; margin-bottom: 10px;">Agenda cerrada</h2>
-            <p style="color: black; font-weight: bold; font-size: 16px;">Pulsa la flecha de atrás del móvil para volver a la pantalla inicial</p>
+            <h2 style="color: white; font-size: 28px; margin-bottom: 12px; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">Agenda cerrada</h2>
+            <p style="color: black; font-weight: bold; font-size: 16px; max-width: 90%;">Pulsa la flecha de atrás del móvil para volver a la pantalla inicial</p>
         </div>
     `;
 }
