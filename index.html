@@ -239,12 +239,16 @@ h1{
 <script>
 
 const SHEET_ID='1TPhi8Z5oKh3NMu_0n1VetSFI5oA0MSbkhca9EG3wy0k';
-const URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+const URL=`https://google.com{SHEET_ID}/gviz/tq?tqx=out:json`;
 
 const CONTRASEÑA_CORRECTA="lucia";
 
 let mesActual = new Date().getMonth();
 let añoActual = new Date().getFullYear();
+
+window.onload = function() {
+    comprobarAcceso();
+};
 
 /* ENTRAR */
 function comprobarAcceso(){
@@ -288,6 +292,7 @@ function cerrarPagina(){
 /* SALIR TOTAL */
 function salirApp(){
 
+    // MODIFICACIÓN DE COLORES Y ESTILOS SOLICITADOS AQUÍ
     document.body.innerHTML = `
         <div style="
             height:100vh;
@@ -297,11 +302,11 @@ function salirApp(){
             flex-direction:column;
             background-image:url('mi perrita entrada.png');
             background-size:cover;
-            color:black;
             text-align:center;
+            padding: 20px;
         ">
-            <h2>Agenda cerrada</h2>
-            <p> Pulsa la flecha de atrás del móvil para volver a la pantalla inicial</p>
+            <h2 style="color: white; font-size: 28px; margin-bottom: 10px;">Agenda cerrada</h2>
+            <p style="color: black; font-weight: bold; font-size: 16px;">Pulsa la flecha de atrás del móvil para volver a la pantalla inicial</p>
         </div>
     `;
 }
@@ -330,7 +335,10 @@ function generarCalendario(){
         html+=`<div><strong>${d}</strong></div>`;
     });
 
-    for(let i=0;i<primerDia.getDay();i++){
+    let primerDiaIndex = primerDia.getDay();
+    let diasDeDesfase = primerDiaIndex === 0 ? 6 : primerDiaIndex - 1;
+
+    for(let i=0; i<diasDeDesfase; i++){
         html+=`<div></div>`;
     }
 
@@ -385,20 +393,20 @@ async function cargarAgenda(){
 
         filas.slice(1).forEach((fila)=>{
 
-            if(!fila.c || !fila.c[0]) return;
+            if(!fila.c || !fila.c) return;
 
-            const fechaTexto = fila.c[0].f || fila.c[0].v || '';
-            const titulo = fila.c[1]?.v || '';
-            const descripcion = fila.c[2]?.v || '';
-            const categoria = fila.c[3]?.v || '';
+            const fechaTexto = fila.c.f || fila.c.v || '';
+            const titulo = fila.c?.v || '';
+            const descripcion = fila.c?.v || '';
+            const categoria = fila.c?.v || '';
 
             const partes=fechaTexto.split('/');
             if(partes.length!==3) return;
 
             const fechaEvento=new Date(
-                parseInt(partes[2]),
-                parseInt(partes[1])-1,
-                parseInt(partes[0])
+                parseInt(partes),
+                parseInt(partes)-1,
+                parseInt(partes)
             );
 
             fechaEvento.setHours(0,0,0,0);
@@ -410,33 +418,21 @@ async function cargarAgenda(){
 
                 const card=document.createElement('div');
                 card.className='evento-card';
-
                 card.innerHTML=`
                     <div class="evento-header">
                         <span class="fecha">${fechaTexto}</span>
-                        <span><strong>${categoria}</strong></span>
                     </div>
                     <div class="titulo">${titulo}</div>
                     <div class="descripcion">${descripcion}</div>
                 `;
-
                 contenedor.appendChild(card);
             }
-
         });
 
-        if(contenedor.innerHTML===''){
-            contenedor.innerHTML='<div class="loading">No hay eventos.</div>';
-        }
-
     }catch(error){
-        document.getElementById('agenda').innerHTML='<div class="loading">Error cargando datos.</div>';
+        console.error(error);
     }
 }
-
-comprobarAcceso();
-
 </script>
-
 </body>
 </html>
