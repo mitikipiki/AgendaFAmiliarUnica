@@ -239,7 +239,7 @@ h1{
 <script>
 
 const SHEET_ID='1TPhi8Z5oKh3NMu_0n1VetSFI5oA0MSbkhca9EG3wy0k';
-const URL=`https://google.com{SHEET_ID}/gviz/tq?tqx=out:json`;
+const URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`; // <-- CAMBIO REALIZADO
 
 const CONTRASEÑA_CORRECTA="lucia";
 
@@ -293,7 +293,6 @@ function cerrarPagina(){
 /* SALIR TOTAL */
 function salirApp(){
 
-    // CAMBIO 1: Textos separados, colores corregidos y subidos arriba para no tapar a la perrita en el móvil
     document.body.innerHTML = `
         <div style="
             height:100vh;
@@ -337,7 +336,6 @@ function generarCalendario(){
         html+=`<div><strong>${d}</strong></div>`;
     });
 
-    // CAMBIO 2: Corrección del desfase de días del calendario (empezando en Lunes)
     let primerDiaIndex = primerDia.getDay();
     let diasDeDesfase = primerDiaIndex === 0 ? 6 : primerDiaIndex - 1;
 
@@ -394,7 +392,6 @@ async function cargarAgenda(){
         const hoy=new Date();
         hoy.setHours(0,0,0,0);
 
-        // CORRECCIÓN DEFINITIVA DE SINTAXIS: Mapeo exacto de tus 4 columnas de Google Sheets
         filas.slice(1).forEach((fila)=>{
 
             if(!fila.c) return;
@@ -433,7 +430,6 @@ async function cargarAgenda(){
             }
         });
 
-        // Validación final para restablecer el texto original si no hay nada programado
         if(contenedor.innerHTML === ''){
             contenedor.innerHTML = '<div class="loading">No hay eventos que mostrar</div>';
         }
