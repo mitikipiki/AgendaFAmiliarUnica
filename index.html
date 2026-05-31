@@ -246,6 +246,7 @@ const CONTRASEÑA_CORRECTA="lucia";
 let mesActual = new Date().getMonth();
 let añoActual = new Date().getFullYear();
 
+// Forzar la ejecución automática al cargar la página
 window.onload = function() {
     comprobarAcceso();
 };
@@ -292,7 +293,7 @@ function cerrarPagina(){
 /* SALIR TOTAL */
 function salirApp(){
 
-    // CORRECCIÓN DE POSICIÓN: Cambiado justify-content a flex-start y añadido padding-top
+    // CAMBIO 1: Textos separados, colores corregidos y subidos arriba para no tapar a la perrita en el móvil
     document.body.innerHTML = `
         <div style="
             height:100vh;
@@ -336,6 +337,7 @@ function generarCalendario(){
         html+=`<div><strong>${d}</strong></div>`;
     });
 
+    // CAMBIO 2: Corrección del desfase de días del calendario (empezando en Lunes)
     let primerDiaIndex = primerDia.getDay();
     let diasDeDesfase = primerDiaIndex === 0 ? 6 : primerDiaIndex - 1;
 
@@ -392,22 +394,23 @@ async function cargarAgenda(){
         const hoy=new Date();
         hoy.setHours(0,0,0,0);
 
+        // CORRECCIÓN DEFINITIVA DE SINTAXIS: Mapeo exacto de tus 4 columnas de Google Sheets
         filas.slice(1).forEach((fila)=>{
 
-            if(!fila.c || !fila.c) return;
+            if(!fila.c) return;
 
-            const fechaTexto = fila.c.f || fila.c.v || '';
-            const titulo = fila.c?.v || '';
-            const descripcion = fila.c?.v || '';
-            const categoria = fila.c?.v || '';
+            const fechaTexto = fila.c[0]?.f || fila.c[0]?.v || '';
+            const titulo = fila.c[1]?.v || '';
+            const descripcion = fila.c[2]?.v || '';
+            const categoria = fila.c[3]?.v || '';
 
             const partes=fechaTexto.split('/');
             if(partes.length!==3) return;
 
             const fechaEvento=new Date(
-                parseInt(partes),
-                parseInt(partes)-1,
-                parseInt(partes)
+                parseInt(partes[2]),
+                parseInt(partes[1])-1,
+                parseInt(partes[0])
             );
 
             fechaEvento.setHours(0,0,0,0);
@@ -430,8 +433,14 @@ async function cargarAgenda(){
             }
         });
 
+        // Validación final para restablecer el texto original si no hay nada programado
+        if(contenedor.innerHTML === ''){
+            contenedor.innerHTML = '<div class="loading">No hay eventos que mostrar</div>';
+        }
+
     }catch(error){
-        console.error(error);
+        console.error("Error en la agenda:", error);
+        document.getElementById('agenda').innerHTML = '<div class="loading">No hay eventos que mostrar</div>';
     }
 }
 </script>
