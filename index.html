@@ -239,7 +239,7 @@ h1{
 <script>
 
 const SHEET_ID='1TPhi8Z5oKh3NMu_0n1VetSFI5oA0MSbkhca9EG3wy0k';
-const URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`; // <-- CAMBIO REALIZADO
+const URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
 const CONTRASEÑA_CORRECTA="lucia";
 
@@ -422,6 +422,8 @@ async function cargarAgenda(){
                 card.innerHTML=`
                     <div class="evento-header">
                         <span class="fecha">${fechaTexto}</span>
+                        <!-- CAMBIO REALIZADO AQUÍ: Añadida la columna D en negro y negrita -->
+                        <span style="color: black; font-weight: bold;">${categoria}</span>
                     </div>
                     <div class="titulo">${titulo}</div>
                     <div class="descripcion">${descripcion}</div>
@@ -435,8 +437,7 @@ async function cargarAgenda(){
         }
 
     }catch(error){
-        console.error("Error en la agenda:", error);
-        document.getElementById('agenda').innerHTML = '<div class="loading">No hay eventos que mostrar</div>';
+        console.error(error);
     }
 }
 </script>
